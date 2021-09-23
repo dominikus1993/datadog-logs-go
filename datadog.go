@@ -1,9 +1,7 @@
 package datadoglogsgo
 
 import (
-	"fmt"
 	"log"
-	"os"
 
 	"github.com/sirupsen/logrus"
 )
@@ -22,11 +20,19 @@ func (datadog *DatadogLogWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
+func (hook *DatadogLogWriter) prepareMessage(entry *logrus.Entry) (string, error) {
+	entry.Data["source"] = hook.config.getSource()
+	entry.Data["ddtags"] = hook.config.getDDTags()
+	entry.Data["service"] = hook.config.service
+	entry.Data["host"] = hook.config.host
+	return entry.String()
+}
+
 func (hook *DatadogLogWriter) Fire(entry *logrus.Entry) error {
-	line, err := entry.String()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to read entry, %v", err)
-		return err
-	}
+	entry.Data["source"] = hook.config.getSource()
+	entry.Data["ddtags"] = hook.config.getDDTags()
+	entry.Data["service"] = hook.config.service
+	entry.Data["host"] = hook.config.host
+	entry.String()
 	return nil
 }
