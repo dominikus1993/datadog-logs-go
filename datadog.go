@@ -11,7 +11,7 @@ type DatadogHook struct {
 	client DatadogClient
 }
 
-func NewDatadogLogWriter(config *DatadogConfiguration, client DatadogClient) *DatadogHook {
+func NewDatadogHook(config *DatadogConfiguration, client DatadogClient) *DatadogHook {
 	return &DatadogHook{config: config, client: client}
 }
 
