@@ -6,33 +6,31 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type DatadogLogWriter struct {
+type DatadogHook struct {
 	config *DatadogConfiguration
-	client *DatadogHttpClient
+	client DatadogClient
 }
 
-func NewDatadogLogWriter() *DatadogLogWriter {
-	return &DatadogLogWriter{}
+func NewDatadogLogWriter(config *DatadogConfiguration, client DatadogClient) *DatadogHook {
+	return &DatadogHook{config: config, client: client}
 }
 
-func (datadog *DatadogLogWriter) Write(p []byte) (n int, err error) {
+func (datadog *DatadogHook) Write(p []byte) (n int, err error) {
 	log.Print(string(p))
 	return len(p), nil
 }
 
-func (hook *DatadogLogWriter) prepareMessage(entry *logrus.Entry) (string, error) {
+func (hook *DatadogHook) prepareMessage(entry *logrus.Entry) {
 	entry.Data["source"] = hook.config.getSource()
 	entry.Data["ddtags"] = hook.config.getDDTags()
 	entry.Data["service"] = hook.config.service
-	entry.Data["host"] = hook.config.host
-	return entry.String()
 }
 
-func (hook *DatadogLogWriter) Fire(entry *logrus.Entry) error {
-	entry.Data["source"] = hook.config.getSource()
-	entry.Data["ddtags"] = hook.config.getDDTags()
-	entry.Data["service"] = hook.config.service
-	entry.Data["host"] = hook.config.host
-	entry.String()
-	return nil
+func (hook *DatadogHook) Fire(entry *logrus.Entry) error {
+	hook.prepareMessage(entry)
+	return hook.client.Send(entry)
+}
+
+func (hook *DatadogHook) Levels() []logrus.Level {
+	return logrus.AllLevels
 }

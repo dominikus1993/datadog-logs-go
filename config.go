@@ -5,18 +5,13 @@ import "strings"
 const GO = "go"
 
 type DatadogConfiguration struct {
-	apiKey  string
-	source  *string
+	source  string
 	service string
-	host    string
 	tags    []string
-	useSSL  bool
-	useTCP  bool
-	port    int
 }
 
-func NewDatadogConfiguration() *DatadogConfiguration {
-	return &DatadogConfiguration{}
+func NewDatadogConfiguration(service, source string, tags []string) *DatadogConfiguration {
+	return &DatadogConfiguration{service: service, source: source, tags: tags}
 }
 
 func (cfg *DatadogConfiguration) getDDTags() string {
@@ -27,8 +22,8 @@ func (cfg *DatadogConfiguration) getDDTags() string {
 }
 
 func (cfg *DatadogConfiguration) getSource() string {
-	if cfg.source == nil {
+	if cfg.source == "" {
 		return GO
 	}
-	return *cfg.source
+	return cfg.source
 }
