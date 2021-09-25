@@ -6,5 +6,5 @@ type DataDogLogMessage struct {
 }
 
 type DataDogLogFormater interface {
-	Format(entry *logrus.Entry) (*DataDogLogFormater, error)
+	Format(entry *logrus.Entry) (*DataDogLogMessage, error)
 }
