@@ -6,7 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type DataDogLogMessage struct {
+type dataDogLogMessage struct {
 	Ddsource string `json:"ddsource"`
 	Ddtags   string `json:"ddtags"`
 	Hostname string `json:"hostname"`
@@ -15,27 +15,26 @@ type DataDogLogMessage struct {
 	Level    string `json:"level"`
 }
 
-func NewDataDogLogMessage(log *logrus.Entry) *DataDogLogMessage {
-	hostname, _ := os.Hostname()
-	return &DataDogLogMessage{
+type DataDogLogFormater interface {
+	Format(entry *logrus.Entry) (*dataDogLogMessage, error)
+}
+
+type dataDogLogFormater struct {
+}
+
+func (f *dataDogLogFormater) Format(log *logrus.Entry) (*dataDogLogMessage, error) {
+	hostname, err := os.Hostname()
+	if err != nil {
+		return nil, err
+	}
+	return &dataDogLogMessage{
 		Ddsource: log.Data["source"].(string),
 		Ddtags:   log.Data["ddtags"].(string),
 		Hostname: hostname,
 		Message:  log.Message,
 		Service:  log.Data["service"].(string),
 		Level:    log.Level.String(),
-	}
-}
-
-type DataDogLogFormater interface {
-	Format(entry *logrus.Entry) (*DataDogLogMessage, error)
-}
-
-type dataDogLogFormater struct {
-}
-
-func (f *dataDogLogFormater) Format(entry *logrus.Entry) (*DataDogLogMessage, error) {
-	return NewDataDogLogMessage(entry), nil
+	}, nil
 }
 
 func NewDataDogLogFormater() *dataDogLogFormater {
