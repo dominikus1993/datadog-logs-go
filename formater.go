@@ -27,12 +27,22 @@ func (f *dataDogLogFormater) Format(log *logrus.Entry) (*dataDogLogMessage, erro
 	if err != nil {
 		return nil, err
 	}
+	source := log.Data["source"].(string)
+	delete(log.Data, "source")
+	service := log.Data["service"].(string)
+	delete(log.Data, "service")
+	tags := log.Data["ddtags"].(string)
+	delete(log.Data, "ddtags")
+	msg, err := log.String()
+	if err != nil {
+		return nil, err
+	}
 	return &dataDogLogMessage{
-		Ddsource: log.Data["source"].(string),
-		Ddtags:   log.Data["ddtags"].(string),
+		Ddsource: source,
+		Ddtags:   tags,
 		Hostname: hostname,
-		Message:  log.Message,
-		Service:  log.Data["service"].(string),
+		Message:  msg,
+		Service:  service,
 		Level:    log.Level.String(),
 	}, nil
 }

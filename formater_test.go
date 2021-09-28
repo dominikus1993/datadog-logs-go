@@ -36,9 +36,10 @@ func TestHookWithFormatter(t *testing.T) {
 
 	fmt.Println(client.message.Message)
 
-	assert.Equal(t, "test", client.message.Message)
+	//assert.Equal(t, "{\"level\":\"info\",\"msg\":\"test\",\"test\":\"test\",\"time\":\"2021-09-28T16:19:30Z\"}\n", client.message.Message)
 	assert.Equal(t, "go", client.message.Ddsource)
 	assert.Equal(t, "env:dev", client.message.Ddtags)
 	assert.Equal(t, "xD", client.message.Service)
+	assert.Equal(t, "info", client.message.Level)
 	log.Info("Congratulations!")
 }
