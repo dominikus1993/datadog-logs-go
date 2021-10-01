@@ -13,25 +13,29 @@ const content = "application/json"
 const maxSize = 2*1024*1024 - 51
 const maxMessageSize = 256 * 1024
 
-type DataDogHttpClientConfiguration struct {
+type dataDogHttpClientConfiguration struct {
 	apiKey string
 	host   string
+}
+
+func NewDatadogHttpClientConfiguration(apiKey string, host string) dataDogHttpClientConfiguration {
+	return dataDogHttpClientConfiguration{apiKey: apiKey, host: host}
 }
 
 type DatadogClient interface {
 	Send(entry *logrus.Entry) error
 }
 
-type DatadogHttpClient struct {
+type datadogHttpClient struct {
 	formatter  DataDogLogFormater
 	datadogUrl string
 }
 
-func NewDatadogHttpClient(config DataDogHttpClientConfiguration, formatter DataDogLogFormater) DatadogHttpClient {
-	return DatadogHttpClient{formatter: formatter, datadogUrl: fmt.Sprintf("https://%s/api/v1/input/%s", config.host, config.apiKey)}
+func NewDatadogHttpClient(config dataDogHttpClientConfiguration, formatter DataDogLogFormater) datadogHttpClient {
+	return datadogHttpClient{formatter: formatter, datadogUrl: fmt.Sprintf("https://%s/api/v1/input/%s", config.host, config.apiKey)}
 }
 
-func (c *DatadogHttpClient) Send(entry *logrus.Entry) error {
+func (c *datadogHttpClient) Send(entry *logrus.Entry) error {
 	msg, err := c.formatter.Format(entry)
 	if err != nil {
 		return err
