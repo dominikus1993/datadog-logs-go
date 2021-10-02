@@ -58,8 +58,6 @@ func (c *datadogHttpClient) Send(entry *logrus.Entry) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(json_data))
-	fmt.Println(c.datadogUrl)
 	resp, err := netClient.Post(c.datadogUrl, content, bytes.NewBuffer(json_data))
 	if err != nil {
 		return err
