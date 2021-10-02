@@ -13,6 +13,11 @@ const content = "application/json"
 const maxSize = 2*1024*1024 - 51
 const maxMessageSize = 256 * 1024
 
+type datadogError struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
 type dataDogHttpClientConfiguration struct {
 	apiKey string
 	host   string
@@ -52,7 +57,12 @@ func (c *datadogHttpClient) Send(entry *logrus.Entry) error {
 		return nil
 	}
 	if resp.StatusCode >= 400 && resp.StatusCode < 500 {
-		return fmt.Errorf("DataDog Http Error, Status Code: %d", resp.StatusCode)
+		decoder := json.NewDecoder(resp.Body)
+		var data datadogError
+		if err := decoder.Decode(&data); err != nil {
+			return fmt.Errorf("DataDog Http Error, Status Code: %d", resp.StatusCode)
+		}
+		return fmt.Errorf("DataDog Http Error, Status Code: %d, Message: %s, Code: %d", resp.StatusCode, data.Message, data.Code)
 	}
 	return nil
 }
