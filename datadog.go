@@ -7,11 +7,11 @@ import (
 )
 
 type DatadogHook struct {
-	config *DatadogConfiguration
+	config *datadogConfiguration
 	client DatadogClient
 }
 
-func NewDatadogHook(config *DatadogConfiguration, client DatadogClient) *DatadogHook {
+func newDatadogHook(config *datadogConfiguration, client DatadogClient) *DatadogHook {
 	return &DatadogHook{config: config, client: client}
 }
 

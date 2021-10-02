@@ -47,6 +47,6 @@ func (f *dataDogLogFormater) Format(log *logrus.Entry) (*dataDogLogMessage, erro
 	}, nil
 }
 
-func NewDataDogLogFormater() *dataDogLogFormater {
+func newDataDogLogFormater() *dataDogLogFormater {
 	return &dataDogLogFormater{}
 }

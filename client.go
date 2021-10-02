@@ -33,6 +33,10 @@ func NewDatadogHttpClientConfiguration(apiKey string, host string) dataDogHttpCl
 	return dataDogHttpClientConfiguration{apiKey: apiKey, host: host}
 }
 
+func NewApiKeyDatadogHttpClientConfiguration(apiKey string) dataDogHttpClientConfiguration {
+	return dataDogHttpClientConfiguration{apiKey: apiKey, host: "http-intake.logs.datadoghq.com"}
+}
+
 type DatadogClient interface {
 	Send(entry *logrus.Entry) error
 }
@@ -42,8 +46,8 @@ type datadogHttpClient struct {
 	datadogUrl string
 }
 
-func NewDatadogHttpClient(config dataDogHttpClientConfiguration, formatter DataDogLogFormater) datadogHttpClient {
-	return datadogHttpClient{formatter: formatter, datadogUrl: fmt.Sprintf("https://%s/api/v1/input/%s", config.host, config.apiKey)}
+func newDatadogHttpClient(config dataDogHttpClientConfiguration, formatter DataDogLogFormater) *datadogHttpClient {
+	return &datadogHttpClient{formatter: formatter, datadogUrl: fmt.Sprintf("https://%s/v1/input/%s", config.host, config.apiKey)}
 }
 
 func (c *datadogHttpClient) Send(entry *logrus.Entry) error {

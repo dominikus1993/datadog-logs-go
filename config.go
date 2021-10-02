@@ -4,24 +4,24 @@ import "strings"
 
 const GO = "go"
 
-type DatadogConfiguration struct {
+type datadogConfiguration struct {
 	source  string
 	service string
 	tags    []string
 }
 
-func NewDatadogConfiguration(service, source string, tags []string) *DatadogConfiguration {
-	return &DatadogConfiguration{service: service, source: source, tags: tags}
+func NewDatadogConfiguration(service, source string, tags []string) *datadogConfiguration {
+	return &datadogConfiguration{service: service, source: source, tags: tags}
 }
 
-func (cfg *DatadogConfiguration) getDDTags() string {
+func (cfg *datadogConfiguration) getDDTags() string {
 	if cfg.tags == nil {
 		return ""
 	}
 	return strings.Join(cfg.tags, ",")
 }
 
-func (cfg *DatadogConfiguration) getSource() string {
+func (cfg *datadogConfiguration) getSource() string {
 	if cfg.source == "" {
 		return GO
 	}

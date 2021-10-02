@@ -13,7 +13,7 @@ type FormattingDataDogClient struct {
 }
 
 func (f *FormattingDataDogClient) Send(message *logrus.Entry) error {
-	formatter := NewDataDogLogFormater()
+	formatter := newDataDogLogFormater()
 	msg, err := formatter.Format(message)
 	f.message = msg
 	return err
@@ -28,7 +28,7 @@ func TestHookWithFormatter(t *testing.T) {
 	log.SetFormatter(&logrus.JSONFormatter{})
 	client := NewFormattingDataDogClient()
 	cfg := NewDatadogConfiguration("xD", "", []string{"env:dev"})
-	hook := NewDatadogHook(cfg, client)
+	hook := newDatadogHook(cfg, client)
 
 	log.Hooks.Add(hook)
 

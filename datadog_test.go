@@ -26,7 +26,7 @@ func TestLocalhostAddAndPrint(t *testing.T) {
 	log.SetFormatter(&logrus.JSONFormatter{})
 	client := NewFakeDataDogClient()
 	cfg := NewDatadogConfiguration("xD", "", []string{"env:dev"})
-	hook := NewDatadogHook(cfg, client)
+	hook := newDatadogHook(cfg, client)
 
 	log.Hooks.Add(hook)
 
