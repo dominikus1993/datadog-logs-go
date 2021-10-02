@@ -2,7 +2,6 @@ package datadoglogsgo
 
 import (
 	"bytes"
-	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,9 +10,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const content = "application/json"
-const maxSize = 2*1024*1024 - 51
-const maxMessageSize = 256 * 1024
+const content string = "application/json"
+const maxSize int = 2*1024*1024 - 51
+const maxMessageSize int = 256 * 1024
 
 var netClient = &http.Client{
 	Timeout: time.Second * 10,
@@ -59,19 +58,9 @@ func (c *datadogHttpClient) Send(entry *logrus.Entry) error {
 	if err != nil {
 		return err
 	}
-	var buf bytes.Buffer
-	g := gzip.NewWriter(&buf)
-	if _, err = g.Write(json_data); err != nil {
-		return err
-	}
-	if err = g.Close(); err != nil {
-		return err
-	}
-	req, err := http.NewRequest("POST", c.datadogUrl, &buf)
-	if err != nil {
-		return err
-	}
-	resp, err := netClient.Do(req)
+	fmt.Println(string(json_data))
+	fmt.Println(c.datadogUrl)
+	resp, err := netClient.Post(c.datadogUrl, content, bytes.NewBuffer(json_data))
 	if err != nil {
 		return err
 	}
