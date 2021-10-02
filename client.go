@@ -2,9 +2,11 @@ package datadoglogsgo
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -12,6 +14,10 @@ import (
 const content = "application/json"
 const maxSize = 2*1024*1024 - 51
 const maxMessageSize = 256 * 1024
+
+var netClient = &http.Client{
+	Timeout: time.Second * 10,
+}
 
 type datadogError struct {
 	Code    int    `json:"code"`
@@ -49,7 +55,19 @@ func (c *datadogHttpClient) Send(entry *logrus.Entry) error {
 	if err != nil {
 		return err
 	}
-	resp, err := http.Post(c.datadogUrl, content, bytes.NewBuffer(json_data))
+	var buf bytes.Buffer
+	g := gzip.NewWriter(&buf)
+	if _, err = g.Write(json_data); err != nil {
+		return err
+	}
+	if err = g.Close(); err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", c.datadogUrl, &buf)
+	if err != nil {
+		return err
+	}
+	resp, err := netClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -58,6 +76,7 @@ func (c *datadogHttpClient) Send(entry *logrus.Entry) error {
 	}
 	if resp.StatusCode >= 400 && resp.StatusCode < 500 {
 		decoder := json.NewDecoder(resp.Body)
+		defer resp.Body.Close()
 		var data datadogError
 		if err := decoder.Decode(&data); err != nil {
 			return fmt.Errorf("DataDog Http Error, Status Code: %d", resp.StatusCode)
