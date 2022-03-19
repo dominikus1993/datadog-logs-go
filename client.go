@@ -14,8 +14,31 @@ const content string = "application/json"
 const maxSize int = 2*1024*1024 - 51
 const maxMessageSize int = 256 * 1024
 
-var netClient = &http.Client{
-	Timeout: time.Second * 10,
+type addDataDogHeaderTransport struct {
+	T             http.RoundTripper
+	datadogApiKey string
+}
+
+func (adt *addDataDogHeaderTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Add("DD-EVP-ORIGIN", "datadog-logs-go")
+	req.Header.Add("DD-EVP-ORIGIN-VERSION", "v1.0.0")
+	req.Header.Add("DD-API-KEY", adt.datadogApiKey)
+	return adt.T.RoundTrip(req)
+}
+
+func newAddHeaderTransport(datadogApiKey string, T http.RoundTripper) *addDataDogHeaderTransport {
+	if T == nil {
+		T = http.DefaultTransport
+	}
+	return &addDataDogHeaderTransport{T: T, datadogApiKey: datadogApiKey}
+}
+
+func newDataDogClient(datadogApiKey string) *http.Client {
+	var netClient = &http.Client{
+		Timeout:   time.Second * 10,
+		Transport: newAddHeaderTransport(datadogApiKey, nil),
+	}
+	return netClient
 }
 
 type datadogError struct {
@@ -43,10 +66,11 @@ type DatadogClient interface {
 type datadogHttpClient struct {
 	formatter  DataDogLogFormater
 	datadogUrl string
+	client     *http.Client
 }
 
 func newDatadogHttpClient(config dataDogHttpClientConfiguration, formatter DataDogLogFormater) *datadogHttpClient {
-	return &datadogHttpClient{formatter: formatter, datadogUrl: fmt.Sprintf("https://%s/v1/input/%s", config.host, config.apiKey)}
+	return &datadogHttpClient{formatter: formatter, datadogUrl: fmt.Sprintf("https://%s/v2/input/%s", config.host, config.apiKey), client: newDataDogClient(config.apiKey)}
 }
 
 func (c *datadogHttpClient) Send(entry *logrus.Entry) error {
@@ -58,7 +82,7 @@ func (c *datadogHttpClient) Send(entry *logrus.Entry) error {
 	if err != nil {
 		return err
 	}
-	resp, err := netClient.Post(c.datadogUrl, content, bytes.NewBuffer(json_data))
+	resp, err := c.client.Post(c.datadogUrl, content, bytes.NewBuffer(json_data))
 	if err != nil {
 		return err
 	}
